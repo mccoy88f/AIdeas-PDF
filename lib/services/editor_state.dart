@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/pdf_annotation.dart';
@@ -6,6 +7,7 @@ import '../models/pdf_annotation.dart';
 class EditorState extends ChangeNotifier {
   // ── File ──
   File? pdfFile;
+  Uint8List? pdfBytes; // populated on web (dart:io File not usable)
   String fileName = 'documento';
   int numPages = 0;
   int currentPage = 1;
@@ -36,9 +38,10 @@ class EditorState extends ChangeNotifier {
   // ────────────────────────────────────────
   // FILE
   // ────────────────────────────────────────
-  void loadFile(File file) {
+  void loadFile(File file, {String? fileName, Uint8List? bytes}) {
     pdfFile = file;
-    fileName = file.path.split(Platform.pathSeparator).last.replaceAll('.pdf', '');
+    pdfBytes = bytes;
+    this.fileName = fileName ?? file.path.split(Platform.pathSeparator).last.replaceAll('.pdf', '');
     currentPage = 1;
     zoom = 1.0;
     annotations.clear();

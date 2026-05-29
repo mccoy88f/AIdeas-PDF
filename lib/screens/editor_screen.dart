@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
@@ -13,6 +15,7 @@ import '../widgets/editor_toolbar.dart';
 import '../widgets/page_sidebar.dart';
 import '../widgets/annotation_canvas.dart';
 import '../utils/app_theme.dart';
+import '../utils/web_download.dart';
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({super.key});
@@ -46,19 +49,42 @@ class _EditorScreenState extends State<EditorScreen> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
+      withData: kIsWeb,
     );
     if (result == null || result.files.isEmpty) return;
-    final path = result.files.first.path!;
-    await _loadPdf(File(path));
+    final picked = result.files.first;
+    if (kIsWeb) {
+      final bytes = picked.bytes;
+      if (bytes == null) return;
+      final name = picked.name.replaceAll('.pdf', '');
+      await _loadPdfBytes(bytes, fileName: name);
+    } else {
+      await _loadPdf(File(picked.path!));
+    }
   }
 
-  Future<void> _loadPdf(File file) async {
+  Future<void> _loadPdfBytes(Uint8List bytes, {String? fileName}) async {
+    _setLoading('Caricamento PDF…');
+    try {
+      _document?.dispose();
+      _document = await PdfDocument.openData(bytes);
+      final state = context.read<EditorState>();
+      // On web use a placeholder File; actual bytes stored separately
+      state.loadFile(File(''), fileName: fileName, bytes: bytes);
+      state.setNumPages(_document!.pages.length);
+    } catch (e) {
+      _showError('Errore caricamento: $e');
+    }
+    _setLoading('');
+  }
+
+  Future<void> _loadPdf(File file, {String? fileName}) async {
     _setLoading('Caricamento PDF…');
     try {
       _document?.dispose();
       _document = await PdfDocument.openFile(file.path);
       final state = context.read<EditorState>();
-      state.loadFile(file);
+      state.loadFile(file, fileName: fileName);
       state.setNumPages(_document!.pages.length);
     } catch (e) {
       _showError('Errore caricamento: $e');
@@ -94,7 +120,7 @@ class _EditorScreenState extends State<EditorScreen> {
   // ────────────────────────────────────────
   Future<void> _onSave() async {
     final state = context.read<EditorState>();
-    if (state.pdfFile == null) return;
+    if (state.pdfFile == null && state.pdfBytes == null) return;
     if (state.hasChanges) {
       final apply = await _showApplyDialog();
       if (apply == null) return;
@@ -132,7 +158,7 @@ class _EditorScreenState extends State<EditorScreen> {
 
   Future<void> _applyChanges() async {
     final state = context.read<EditorState>();
-    if (state.pdfFile == null) return;
+    if (state.pdfFile == null && state.pdfBytes == null) return;
     _setLoading('Applicazione modifiche…');
     try {
       final output = await PdfService.applyChangesAndSave(
@@ -140,7 +166,18 @@ class _EditorScreenState extends State<EditorScreen> {
         state: state,
         outputName: state.fileName + '_modified',
       );
-      await _loadPdf(output);
+      if (kIsWeb) {
+        // On web, bytes are already updated in state.pdfBytes by the service.
+        // Reload the document from the updated bytes.
+        final bytes = state.pdfBytes;
+        if (bytes != null) {
+          _document?.dispose();
+          _document = await PdfDocument.openData(bytes);
+          state.setNumPages(_document!.pages.length);
+        }
+      } else {
+        await _loadPdf(output);
+      }
       state.clearEdits();
       _showSnack('Modifiche applicate');
     } catch (e) {
@@ -196,11 +233,16 @@ class _EditorScreenState extends State<EditorScreen> {
 
   Future<void> _downloadPdf(String name) async {
     final state = context.read<EditorState>();
-    if (state.pdfFile == null) return;
+    if (state.pdfFile == null && state.pdfBytes == null) return;
     _setLoading('Preparazione download…');
     try {
       final fname = name.isEmpty ? 'documento_AIdeasPDF' : name;
-      if (Platform.isAndroid || Platform.isIOS) {
+      if (kIsWeb) {
+        final bytes = state.pdfBytes;
+        if (bytes == null) return;
+        final url = createObjectUrlFromBytes(bytes);
+        triggerWebDownload(url, '$fname.pdf');
+      } else if (Platform.isAndroid || Platform.isIOS) {
         await Share.shareXFiles(
           [XFile(state.pdfFile!.path, name: '$fname.pdf')],
           subject: fname,
