@@ -4,7 +4,6 @@ import 'dart:io';
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
-import 'package:cross_file/cross_file.dart';
 import 'package:pdfrx/pdfrx.dart';
 import '../models/pdf_annotation.dart';
 import 'editor_state.dart';
@@ -19,10 +18,13 @@ class PdfService {
     required EditorState state,
     required String outputName,
   }) async {
-    // XFile.readAsBytes() works on web (object-URL fetch) and native (file read)
-    final inputBytes = await XFile(sourceFile.path).readAsBytes();
+    // On web, bytes are stored in EditorState (set when file was opened)
+    final inputBytes = state.pdfBytes;
+    if (inputBytes == null) throw Exception('PDF bytes non disponibili');
     final modifiedBytes = await _applyWithMuPdf(inputBytes, state);
     final objectUrl = _bytesToObjectUrl(modifiedBytes);
+    // Update stored bytes so subsequent saves use the modified PDF
+    state.pdfBytes = modifiedBytes;
     return File(objectUrl);
   }
 
