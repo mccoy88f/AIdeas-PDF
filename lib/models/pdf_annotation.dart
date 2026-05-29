@@ -6,7 +6,7 @@ enum EditorTool { select, typewriter, editText, rect, highlight, draw, image, re
 
 class PdfAnnotation {
   final String id;
-  final int page;
+  int page;
   final AnnotationType type;
   double x, y, w, h;
   String? text;

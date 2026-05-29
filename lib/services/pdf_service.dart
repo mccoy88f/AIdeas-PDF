@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -24,7 +25,7 @@ class PdfService {
       fullWidth:  width.toDouble(),
       fullHeight: height.toDouble(),
     );
-    final uiImage = await pdfImage.createImageIfNotAvailable();
+    final uiImage = await _pdfImageToUiImage(pdfImage, width, height);
 
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
@@ -34,6 +35,25 @@ class PdfService {
     final img = await picture.toImage(width, height);
     final pngData = await img.toByteData(format: ui.ImageByteFormat.png);
     return pngData!.buffer.asUint8List();
+  }
+
+  // ── Converte PdfImage in ui.Image compatibile con pdfrx 1.0.103+ ──
+  static Future<ui.Image> _pdfImageToUiImage(PdfImage? pdfImage, int width, int height) async {
+    if (pdfImage == null) {
+      // Pagina vuota bianca come fallback
+      final recorder = ui.PictureRecorder();
+      Canvas(recorder).drawColor(Colors.white, BlendMode.src);
+      return recorder.endRecording().toImage(width, height);
+    }
+    final completer = Completer<ui.Image>();
+    ui.decodeImageFromPixels(
+      pdfImage.pixels,
+      pdfImage.width,
+      pdfImage.height,
+      ui.PixelFormat.rgba8888,
+      completer.complete,
+    );
+    return completer.future;
   }
 
   // ── Rasterizza una pagina con annotazioni baked (inclusa redazione sicura) ──
@@ -52,7 +72,7 @@ class PdfService {
       fullWidth:  width.toDouble(),
       fullHeight: height.toDouble(),
     );
-    final uiImage = await pdfImage.createImageIfNotAvailable();
+    final uiImage = await _pdfImageToUiImage(pdfImage, width, height);
 
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
