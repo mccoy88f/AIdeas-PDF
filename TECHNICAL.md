@@ -9,7 +9,7 @@ Documentazione tecnica per sviluppatori.
 | Libreria | Versione | Scopo |
 |---|---|---|
 | `pdfrx` | ^1.0.70 | Rendering PDF (PDFium/MuPDF nativo bundled) |
-| `pdf` | ^3.11.0 | Generazione PDF con annotazioni baked |
+| `syncfusion_flutter_pdf` | ^27.1.0 | Editing PDF nativo: redazione vera, annotazioni vettoriali |
 | `provider` | ^6.1.2 | State management (ChangeNotifier) |
 | `file_picker` | ^8.0.3 | Apertura file dal filesystem |
 | `image_picker` | ^1.1.2 | Inserimento immagini dalla galleria |
@@ -19,6 +19,7 @@ Documentazione tecnica per sviluppatori.
 | `docx_template` | ^0.4.0 | Export DOCX/ODT |
 
 > `pdfrx` include PDFium precompilato per Android, iOS e Desktop. Su web usa una build WASM dello stesso engine.
+> `syncfusion_flutter_pdf` è puro Dart: funziona su tutte le piattaforme senza codice nativo aggiuntivo. Free tier disponibile (community license).
 
 ---
 
@@ -113,17 +114,16 @@ Sezioni principali:
 Tutte le operazioni di I/O sono metodi `static` su `PdfService`.
 
 ### `applyChangesAndSave()`
-Processo di bake delle annotazioni nel PDF:
+Editing nativo del PDF tramite Syncfusion — il testo originale rimane selezionabile:
 
-1. Apre il documento originale con `pdfrx`
-2. Per ogni pagina chiama `_renderPageWithAnnotations()`
-3. `_renderPageWithAnnotations()` rasterizza la pagina via `PdfPage.render()` → `decodeImageFromPixels()` → `ui.Image`
-4. Disegna le annotazioni sopra con `dart:ui Canvas` (`_drawAnnotation()`)
-5. Esporta ogni pagina come PNG (`ui.ImageByteFormat.png`)
-6. Assembla tutte le pagine in un nuovo PDF con il package `pdf` (`pw.Document`)
-7. Salva in `getTemporaryDirectory()`
+1. Carica il PDF con `syncfusion_flutter_pdf` (`spdf.PdfDocument`)
+2. Per ogni area `AnnotationType.redact` aggiunge una `PdfRedactionAnnotation` nera
+3. Per ogni `TextBlockEdit.deleted` / `ImageBlockEdit.deleted` aggiunge una `PdfRedactionAnnotation` bianca
+4. Chiama `document.redact()` → rimuove il contenuto dal content stream PDF (irrecuperabile)
+5. Disegna le annotazioni visive (typewriter, rect, highlight, draw, image) via `page.graphics` **sopra** il contenuto esistente senza toccarlo
+6. Salva come PDF vettoriale in `getTemporaryDirectory()`
 
-Il PDF risultante è **image-based**: nessun testo estraibile, redazioni irrecuperabili.
+Il PDF risultante è **vettoriale**: il testo non oscurato è selezionabile, le redazioni sono irrecuperabili.
 
 ### `_pdfImageToUiImage()`
 Converte `PdfImage?` (pdfrx 1.0.103+) in `ui.Image` tramite `ui.decodeImageFromPixels()` usando il buffer `PdfImage.pixels` (RGBA8888). Se `PdfImage` è null restituisce una pagina bianca vuota.
