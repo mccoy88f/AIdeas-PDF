@@ -45,20 +45,20 @@ class PdfService {
           .map((e) => {
                 'page': e.page,
                 'deleted': e.deleted,
-                'origX': e.x,
-                'origY': e.y,
-                'origWidth': e.width,
-                'origFontSize': e.fontSize,
+                'origX': e.origX,
+                'origY': e.origY,
+                'origWidth': e.origWidth,
+                'origFontSize': e.origFontSize,
               })
           .toList(),
       'imageEdits': state.imageEdits.values
           .map((e) => {
                 'page': e.page,
                 'deleted': e.deleted,
-                'origX': e.x,
-                'origY': e.y,
-                'origWidth': e.width,
-                'origHeight': e.height,
+                'origX': e.origX,
+                'origY': e.origY,
+                'origWidth': e.origWidth,
+                'origHeight': e.origHeight,
               })
           .toList(),
     });
@@ -70,13 +70,16 @@ class PdfService {
     ) as JSObject;
 
     final completer = Completer<Uint8List>();
-    (promise.callMethod('then'.toJS, ((JSUint8Array result) {
+    final onFulfilled = (JSUint8Array result) {
       completer.complete(result.toDart);
-      return null.toJS;
-    }).toJS) as JSObject).callMethod('catch'.toJS, ((JSAny err) {
+      return ''.toJS; // non-null JSString avoids null.toJS ambiguity
+    }.toJS;
+    final onRejected = (JSAny err) {
       completer.completeError(err.dartify().toString());
-      return null.toJS;
-    }).toJS);
+      return ''.toJS;
+    }.toJS;
+    (promise.callMethod('then'.toJS, onFulfilled) as JSObject)
+        .callMethod('catch'.toJS, onRejected);
 
     return completer.future;
   }
