@@ -2,114 +2,129 @@
 
 Editor PDF professionale con redazione sicura, annotazioni, modifica testo e immagini.
 
+[![Build Windows](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/build-windows.yml/badge.svg)](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/build-windows.yml)
+[![Deploy Web](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/deploy-web.yml/badge.svg)](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/deploy-web.yml)
+
+## Demo
+
+**Web app:** [mccoy88f.github.io/AIdeas-PDF](https://mccoy88f.github.io/AIdeas-PDF/)
+
+**Windows:** scarica lo zip dalla tab [Actions → Build Windows → Artifacts](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/build-windows.yml)
+
+---
+
+## Funzionalità
+
+| Feature | Shortcut | Stato |
+|---|---|---|
+| Apertura PDF | Ctrl+O | ✅ |
+| Cursore / selezione | V | ✅ |
+| Macchina da scrivere | T | ✅ |
+| Modifica testo esistente | E | ✅ |
+| Inserisci immagine | I | ✅ |
+| Rettangolo | R | ✅ |
+| Evidenziatore | H | ✅ |
+| Penna libera | D | ✅ |
+| **Redazione sicura** | **X** | ✅ |
+| Salva / applica modifiche | Ctrl+S | ✅ |
+| Undo | Ctrl+Z | ✅ |
+| Zoom in/out | + / - | ✅ |
+| Sidebar miniature + drag & drop | — | ✅ |
+| Tema dark / light | — | ✅ |
+| Conversione PNG/JPG/DOCX/ODT | — | ✅ |
+| Export ZIP multi-pagina | — | 🔜 |
+| Merge PDF | — | 🔜 |
+
+### Redazione sicura
+
+Il tool **Redazione** (tasto `X`) oscura permanentemente il contenuto selezionato.
+Quando salvi con "Applica e aggiorna", ogni pagina viene rasterizzata e il testo
+sottostante ai blocchi neri è **irrecuperabile**: il PDF in output è image-based,
+senza testo estraibile.
+
+---
+
 ## Stack
 
 | Libreria | Versione | Scopo |
 |---|---|---|
-| `pdfrx` | ^1.0.70 | Rendering PDF + accesso MuPDF nativo |
+| `pdfrx` | ^1.0.70 | Rendering PDF (PDFium/MuPDF nativo) |
+| `pdf` | ^3.11.0 | Generazione PDF con annotazioni baked |
+| `provider` | ^6.1.2 | State management |
 | `file_picker` | ^8.0.3 | Apertura file PDF |
 | `image_picker` | ^1.1.2 | Inserimento immagini |
+| `share_plus` | ^10.0.0 | Export / condivisione |
 | `flutter_colorpicker` | ^1.1.0 | Selezione colori |
-| `google_fonts` | ^6.2.1 | Plus Jakarta Sans |
-| `share_plus` | ^10.0.0 | Export/condivisione |
-| `archive` | ^3.6.1 | Creazione ZIP (export multi-pagina) |
-| `provider` | ^6.1.2 | State management |
+| `archive` | ^3.6.1 | Export ZIP multi-pagina (in sviluppo) |
+| `docx_template` | ^0.4.0 | Export DOCX/ODT |
 
-> **Nota:** `pdfrx` usa internamente PDFium (Android/iOS/Desktop) che include le stesse
-> capacità di MuPDF per redazione sicura via `PdfPage.render()` e operazioni native.
-
-## Setup
-
-```bash
-# 1. Assicurati di avere Flutter installato
-flutter --version   # richiede >= 3.10
-
-# 2. Clona / copia la cartella aideas_pdf
-
-# 3. Installa le dipendenze
-cd aideas_pdf
-flutter pub get
-
-# 4. Avvia in debug
-flutter run                          # usa il dispositivo/emulatore di default
-flutter run -d windows               # Windows desktop
-flutter run -d macos                 # macOS
-flutter run -d linux                 # Linux
-flutter run -d chrome                # Web (limitazioni WASM)
-flutter run -d android               # Android (emulatore o device)
-flutter run -d ios                   # iOS (richiede Mac + Xcode)
-```
-
-## Build release
-
-```bash
-# Android APK
-flutter build apk --release
-
-# Android AAB (Play Store)
-flutter build appbundle --release
-
-# iOS (richiede Mac)
-flutter build ios --release
-
-# Windows
-flutter build windows --release
-
-# macOS
-flutter build macos --release
-
-# Web
-flutter build web --release
-```
+---
 
 ## Struttura progetto
 
 ```
 lib/
-├── main.dart                  # Entry point
+├── main.dart                  # Entry point + Provider setup
 ├── models/
-│   └── pdf_annotation.dart    # Modelli dati (PdfAnnotation, TextBlockEdit...)
+│   └── pdf_annotation.dart    # PdfAnnotation, TextBlockEdit, ImageBlockEdit
 ├── services/
-│   ├── editor_state.dart      # State management (ChangeNotifier)
-│   └── pdf_service.dart       # Operazioni PDF (render, redazione, export)
+│   ├── editor_state.dart      # ChangeNotifier — stato globale editor
+│   └── pdf_service.dart       # Rasterizzazione, bake annotazioni, export PDF
 ├── screens/
-│   └── editor_screen.dart     # Schermata principale
+│   └── editor_screen.dart     # Schermata principale + shortcut tastiera
 ├── widgets/
-│   ├── editor_toolbar.dart    # Toolbar con tutti i tool
-│   ├── page_sidebar.dart      # Miniature pagine con drag reorder
-│   └── annotation_canvas.dart # Canvas annotazioni sopra il PDF
+│   ├── editor_toolbar.dart    # Toolbar con palette tool e controlli
+│   ├── page_sidebar.dart      # Miniature pagine con drag & drop
+│   └── annotation_canvas.dart # Canvas disegno annotazioni sopra il PDF
 └── utils/
-    └── app_theme.dart         # Tema dark/light (colori, tipografia)
+    └── app_theme.dart         # Tema dark/light
 ```
 
-## Funzionalità implementate
+---
 
-- [x] Apertura PDF da file system
-- [x] Toolbar con tutti i tool (cursore, macchina da scrivere, modifica testo, immagine, rettangolo, highlight, penna)
-- [x] Annotazioni: testo, rettangoli, evidenziatori, penna libera, immagini overlay
-- [x] Sidebar miniature con drag & drop riordino e eliminazione pagina
-- [x] Tema dark / light
-- [x] Zoom in/out/fit
-- [x] Stato modifiche con modale applica/scarta
-- [x] Shortcut tastiera (V, T, E, R, H, D, I, Ctrl+S, Ctrl+Z...)
-- [x] Dialog salva con nome personalizzato
-- [x] Conversione PNG/JPG/DOCX/ODT
-- [ ] Redazione sicura via pdfrx (MuPDF nativo) — da completare in `pdf_service.dart`
-- [ ] Modifica blocchi testo esistenti (editText mode) — da completare
-- [ ] Aggiunta PDF (merge) — da completare
-- [ ] Export ZIP multi-pagina — da completare
+## Setup locale
 
-## Note per completare
+```bash
+# Requisiti: Flutter >= 3.10
+flutter --version
 
-Il file `lib/services/pdf_service.dart` contiene i placeholder per le operazioni
-che richiedono accesso alle API native di pdfrx/MuPDF:
+git clone https://github.com/mccoy88f/AIdeas-PDF.git
+cd AIdeas-PDF
 
-1. **Redazione**: `pdfrx` espone `PdfPage` con accesso diretto — usare
-   `PdfDocumentRef` per creare annotazioni `Redact` e chiamare `applyRedaction()`
-   tramite il canale platform (FFI/MethodChannel).
+# Prima volta: aggiunge il supporto per la piattaforma target
+flutter create --platforms=windows .   # oppure web, linux, macos, android, ios
 
-2. **Merge PDF**: usare `PdfDocument.openFile()` su entrambi e copiare le pagine
-   tramite le API di editing di pdfrx.
+flutter pub get
+flutter run -d windows    # o chrome, linux, macos, android, ios
+```
 
-3. **Modifica testo esistente**: usare `page.loadText()` per estrarre i blocchi,
-   poi sostituirli con white-out + nuovo testo via canvas layer.
+## Build release
+
+```bash
+# Windows
+flutter create --platforms=windows .
+flutter build windows --release
+# Output: build/windows/x64/runner/Release/
+
+# Web
+flutter create --platforms=web .
+flutter build web --release --base-href "/AIdeas-PDF/"
+# Output: build/web/
+
+# Android APK
+flutter build apk --release
+
+# macOS
+flutter build macos --release
+```
+
+---
+
+## CI / CD
+
+| Workflow | Trigger | Output |
+|---|---|---|
+| **Build Windows** | Push su qualsiasi branch + manuale | ZIP scaricabile dagli Artifacts (30 gg) |
+| **Deploy Web** | Push su `main` + manuale | Deploy su GitHub Pages |
+
+Per abilitare GitHub Pages: **Settings → Pages → Source → GitHub Actions**
