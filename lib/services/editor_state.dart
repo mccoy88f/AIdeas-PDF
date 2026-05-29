@@ -36,9 +36,9 @@ class EditorState extends ChangeNotifier {
   // ────────────────────────────────────────
   // FILE
   // ────────────────────────────────────────
-  void loadFile(File file) {
+  void loadFile(File file, {String? fileName}) {
     pdfFile = file;
-    fileName = file.path.split(Platform.pathSeparator).last.replaceAll('.pdf', '');
+    this.fileName = fileName ?? file.path.split(Platform.pathSeparator).last.replaceAll('.pdf', '');
     currentPage = 1;
     zoom = 1.0;
     annotations.clear();

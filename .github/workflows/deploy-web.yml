@@ -35,6 +35,12 @@ jobs:
       - name: Add Web support
         run: flutter create --platforms=web .
 
+      - name: Download MuPDF WASM
+        run: |
+          npm install mupdf
+          cp node_modules/mupdf/dist/mupdf.js web/mupdf.js
+          cp node_modules/mupdf/dist/mupdf.wasm web/mupdf.wasm
+
       - name: Build Web
         run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
 

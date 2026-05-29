@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
@@ -13,6 +14,7 @@ import '../widgets/editor_toolbar.dart';
 import '../widgets/page_sidebar.dart';
 import '../widgets/annotation_canvas.dart';
 import '../utils/app_theme.dart';
+import '../utils/web_download.dart';
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({super.key});
@@ -47,19 +49,28 @@ class _EditorScreenState extends State<EditorScreen> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
+      withData: kIsWeb,
     );
     if (result == null || result.files.isEmpty) return;
-    final path = result.files.first.path!;
-    await _loadPdf(File(path));
+    final picked = result.files.first;
+    if (kIsWeb) {
+      final bytes = picked.bytes;
+      if (bytes == null) return;
+      final objectUrl = createObjectUrlFromBytes(bytes);
+      final name = picked.name.replaceAll('.pdf', '');
+      await _loadPdf(File(objectUrl), fileName: name);
+    } else {
+      await _loadPdf(File(picked.path!));
+    }
   }
 
-  Future<void> _loadPdf(File file) async {
+  Future<void> _loadPdf(File file, {String? fileName}) async {
     _setLoading('Caricamento PDF…');
     try {
       _document?.dispose();
       _document = await PdfDocument.openFile(file.path);
       final state = context.read<EditorState>();
-      state.loadFile(file);
+      state.loadFile(file, fileName: fileName);
       state.setNumPages(_document!.pages.length);
     } catch (e) {
       _showError('Errore caricamento: $e');
@@ -201,7 +212,9 @@ class _EditorScreenState extends State<EditorScreen> {
     _setLoading('Preparazione download…');
     try {
       final fname = name.isEmpty ? 'documento_AIdeasPDF' : name;
-      if (Platform.isAndroid || Platform.isIOS) {
+      if (kIsWeb) {
+        triggerWebDownload(state.pdfFile!.path, '$fname.pdf');
+      } else if (Platform.isAndroid || Platform.isIOS) {
         await Share.shareXFiles(
           [XFile(state.pdfFile!.path, name: '$fname.pdf')],
           subject: fname,
