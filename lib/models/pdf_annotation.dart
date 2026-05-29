@@ -1,8 +1,8 @@
 import 'dart:ui';
 
-enum AnnotationType { text, rect, highlight, draw, image }
+enum AnnotationType { text, rect, highlight, draw, image, redact }
 
-enum EditorTool { select, typewriter, editText, rect, highlight, draw, image }
+enum EditorTool { select, typewriter, editText, rect, highlight, draw, image, redact }
 
 class PdfAnnotation {
   final String id;

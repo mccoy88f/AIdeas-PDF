@@ -77,7 +77,7 @@ class EditorToolbar extends StatelessWidget {
               _Sep(isDark),
             ],
 
-            // Context: spessore (rect, draw)
+            // Context: spessore (rect, draw, redact)
             if (state.tool == EditorTool.rect || state.tool == EditorTool.draw) ...[
               _LineWidthControl(),
               _Sep(isDark),
@@ -217,6 +217,7 @@ class _ToolGroup extends StatelessWidget {
           _TP(tool: EditorTool.rect,       icon: Icons.crop_square_outlined,    tip: 'Rettangolo (R)'),
           _TP(tool: EditorTool.highlight,  icon: Icons.highlight,               tip: 'Evidenziatore (H)'),
           _TP(tool: EditorTool.draw,       icon: Icons.draw_outlined,           tip: 'Penna (D)'),
+          _TPRedact(),
         ],
       ),
     );
@@ -247,6 +248,32 @@ class _TP extends StatelessWidget {
           ),
           child: Icon(icon, size: 16,
             color: isActive ? Colors.white : AppTheme.muted),
+        ),
+      ),
+    );
+  }
+}
+
+// Bottone redazione: usa colore rosso quando attivo per segnalarne la pericolosità
+class _TPRedact extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<EditorState>();
+    final isActive = state.tool == EditorTool.redact;
+    return Tooltip(
+      message: 'Redazione sicura (X)',
+      child: InkWell(
+        onTap: () => state.setTool(EditorTool.redact),
+        borderRadius: BorderRadius.circular(4),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          width: 30, height: 30,
+          decoration: BoxDecoration(
+            color: isActive ? AppTheme.danger : Colors.transparent,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Icon(Icons.block_outlined, size: 16,
+            color: isActive ? Colors.white : AppTheme.danger),
         ),
       ),
     );

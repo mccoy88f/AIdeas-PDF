@@ -267,6 +267,7 @@ class _EditorScreenState extends State<EditorScreen> {
     if (event.logicalKey == LogicalKeyboardKey.keyR) { state.setTool(EditorTool.rect); }
     if (event.logicalKey == LogicalKeyboardKey.keyH) { state.setTool(EditorTool.highlight); }
     if (event.logicalKey == LogicalKeyboardKey.keyD) { state.setTool(EditorTool.draw); }
+    if (event.logicalKey == LogicalKeyboardKey.keyX) { state.setTool(EditorTool.redact); }
     if (event.logicalKey == LogicalKeyboardKey.keyI) { _insertImage(); }
     if (event.logicalKey == LogicalKeyboardKey.delete) { state.deleteSelected(); }
     if (event.logicalKey == LogicalKeyboardKey.equal) { state.zoomIn(); }
@@ -491,6 +492,7 @@ class _StatusBar extends StatelessWidget {
     EditorTool.highlight:  'Evidenziatore',
     EditorTool.draw:       'Penna',
     EditorTool.image:      'Immagine',
+    EditorTool.redact:     'Redazione sicura',
   }[t] ?? '';
 }
 

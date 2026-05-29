@@ -119,6 +119,13 @@ class _AnnotationCanvasState extends State<AnnotationCanvas> {
           x: x, y: y, w: w, h: h,
           color: const Color(0xFFFFD700),
         );
+      } else if (state.tool == EditorTool.redact) {
+        _live = PdfAnnotation(
+          id: 'live', page: state.currentPage,
+          type: AnnotationType.redact,
+          x: x, y: y, w: w, h: h,
+          color: Colors.black,
+        );
       } else if (state.tool == EditorTool.draw && _live != null) {
         _live!.points!.add(cur);
       }
@@ -132,7 +139,7 @@ class _AnnotationCanvasState extends State<AnnotationCanvas> {
     _startPos = null;
 
     // Scarta se troppo piccolo
-    if ((a.type == AnnotationType.rect || a.type == AnnotationType.highlight) &&
+    if ((a.type == AnnotationType.rect || a.type == AnnotationType.highlight || a.type == AnnotationType.redact) &&
         (a.w < 0.005 || a.h < 0.005)) {
       setState(() {});
       return;
@@ -151,7 +158,7 @@ class _AnnotationCanvasState extends State<AnnotationCanvas> {
       .where((a) => a.page == state.currentPage)
       .toList().reversed;
     for (final a in anns) {
-      if (a.type == AnnotationType.rect || a.type == AnnotationType.highlight) {
+      if (a.type == AnnotationType.rect || a.type == AnnotationType.highlight || a.type == AnnotationType.redact) {
         if (norm.dx >= a.x && norm.dx <= a.x + a.w &&
             norm.dy >= a.y && norm.dy <= a.y + a.h) return a;
       } else if (a.type == AnnotationType.text) {
@@ -301,7 +308,14 @@ class _AnnotationPainter extends CustomPainter {
       ..strokeWidth = a.lineWidth
       ..style = PaintingStyle.stroke;
 
-    if (a.type == AnnotationType.rect) {
+    if (a.type == AnnotationType.redact) {
+      final r = Rect.fromLTWH(
+        a.x * sz.width, a.y * sz.height,
+        a.w * sz.width, a.h * sz.height,
+      );
+      canvas.drawRect(r, Paint()..color = Colors.black..style = PaintingStyle.fill);
+      if (sel) _drawSelBox(canvas, r.inflate(3));
+    } else if (a.type == AnnotationType.rect) {
       final r = Rect.fromLTWH(
         a.x * sz.width, a.y * sz.height,
         a.w * sz.width, a.h * sz.height,
