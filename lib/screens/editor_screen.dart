@@ -362,7 +362,9 @@ class _EditorScreenState extends State<EditorScreen> {
                     child: _document == null
                       ? _DropZone(onOpenFile: _openFile)
                       : _PdfCanvas(
-                          filePath: state.pdfFile!.path,
+                          key: kIsWeb ? ValueKey(state.pdfVersion) : null,
+                          filePath: kIsWeb ? null : state.pdfFile?.path,
+                          pdfBytes: kIsWeb ? state.pdfBytes : null,
                           state: state,
                           controller: _pdfCtrl!,
                         ),
@@ -469,37 +471,39 @@ class _DropZone extends StatelessWidget {
 
 // ── PDF canvas con annotazioni ─────────────
 class _PdfCanvas extends StatelessWidget {
-  final String filePath;
+  final String? filePath;
+  final Uint8List? pdfBytes;
   final EditorState state;
   final PdfViewerController controller;
 
   const _PdfCanvas({
-    required this.filePath,
+    this.filePath,
+    this.pdfBytes,
     required this.state,
     required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
-    return PdfViewer.file(
-      filePath,
-      controller: controller,
-      params: PdfViewerParams(
-        margin: 24,
-        backgroundColor: Colors.transparent,
-        pageOverlaysBuilder: (context, pageRect, page) {
-          final pageSize = Size(page.width, page.height);
-          return [
-            Positioned.fill(
-              child: AnnotationCanvas(
-                pageSize: pageSize,
-                zoom: state.zoom,
-              ),
+    final params = PdfViewerParams(
+      margin: 24,
+      backgroundColor: Colors.transparent,
+      pageOverlaysBuilder: (context, pageRect, page) {
+        final pageSize = Size(page.width, page.height);
+        return [
+          Positioned.fill(
+            child: AnnotationCanvas(
+              pageSize: pageSize,
+              zoom: state.zoom,
             ),
-          ];
-        },
-      ),
+          ),
+        ];
+      },
     );
+    if (pdfBytes != null) {
+      return PdfViewer.data(pdfBytes!, controller: controller, params: params);
+    }
+    return PdfViewer.file(filePath!, controller: controller, params: params);
   }
 }
 

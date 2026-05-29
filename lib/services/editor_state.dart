@@ -8,6 +8,7 @@ class EditorState extends ChangeNotifier {
   // ── File ──
   File? pdfFile;
   Uint8List? pdfBytes; // populated on web (dart:io File not usable)
+  int pdfVersion = 0;  // incremented on web to force PdfViewer.data rebuild
   String fileName = 'documento';
   int numPages = 0;
   int currentPage = 1;
@@ -41,6 +42,7 @@ class EditorState extends ChangeNotifier {
   void loadFile(File file, {String? fileName, Uint8List? bytes}) {
     pdfFile = file;
     pdfBytes = bytes;
+    if (bytes != null) pdfVersion++;
     this.fileName = fileName ?? file.path.split(Platform.pathSeparator).last.replaceAll('.pdf', '');
     currentPage = 1;
     zoom = 1.0;

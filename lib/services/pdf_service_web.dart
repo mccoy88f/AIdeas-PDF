@@ -25,6 +25,7 @@ class PdfService {
     final objectUrl = _bytesToObjectUrl(modifiedBytes);
     // Update stored bytes so subsequent saves use the modified PDF
     state.pdfBytes = modifiedBytes;
+    state.pdfVersion++;
     return File(objectUrl);
   }
 
