@@ -1,130 +1,68 @@
-# AIdeas PDF — Flutter
+# AIdeas PDF
 
-Editor PDF professionale con redazione sicura, annotazioni, modifica testo e immagini.
+Editor PDF professionale con redazione sicura, annotazioni e strumenti di modifica.
 
 [![Build Windows](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/build-windows.yml/badge.svg)](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/build-windows.yml)
 [![Deploy Web](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/deploy-web.yml/badge.svg)](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/deploy-web.yml)
 
-## Demo
-
-**Web app:** [mccoy88f.github.io/AIdeas-PDF](https://mccoy88f.github.io/AIdeas-PDF/)
-
-**Windows:** scarica lo zip dalla tab [Actions → Build Windows → Artifacts](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/build-windows.yml)
+**[Apri nel browser →](https://mccoy88f.github.io/AIdeas-PDF/)** · **[Scarica per Windows →](https://github.com/mccoy88f/AIdeas-PDF/actions/workflows/build-windows.yml)**
 
 ---
 
-## Funzionalità
+## Cosa puoi fare
 
-| Feature | Shortcut | Stato |
+### Annotare un PDF
+Apri qualsiasi PDF e aggiungi annotazioni senza modificare il documento originale finché non decidi di applicarle.
+
+- **Macchina da scrivere** — clicca in un punto qualsiasi e scrivi testo sovrapposto alla pagina, con scelta di font, dimensione e colore
+- **Rettangolo** — disegna cornici e riquadri con spessore e colore personalizzabili
+- **Evidenziatore** — evidenzia aree con sfondo giallo semitrasparente
+- **Penna libera** — disegna a mano libera con tratto morbido
+- **Immagine** — inserisce un'immagine dal dispositivo sovrapposta alla pagina, riposizionabile
+
+### Oscurare contenuto (Redazione sicura)
+Il tool **Redazione** copre permanentemente qualsiasi area del documento con un blocco nero.
+A differenza di una semplice copertura grafica, quando salvi il documento il testo sottostante viene **eliminato definitivamente**: il PDF risultante è composto da immagini rasterizzate e non contiene testo estraibile o copiabile.
+
+Utile per oscurare dati sensibili, informazioni personali o contenuti riservati prima di condividere un documento.
+
+### Modificare le pagine
+Dalla barra laterale puoi riordinare le pagine trascinandole oppure eliminare singole pagine dal documento.
+
+### Salvare e convertire
+Quando hai finito puoi:
+- **Salvare** il PDF con le modifiche applicate in modo permanente
+- **Convertire** il documento o singole pagine in PNG, JPG, DOCX o ODT
+- **Condividere** direttamente dal dispositivo (mobile)
+
+---
+
+## Strumenti e shortcut
+
+| Strumento | Tasto | Descrizione |
 |---|---|---|
-| Apertura PDF | Ctrl+O | ✅ |
-| Cursore / selezione | V | ✅ |
-| Macchina da scrivere | T | ✅ |
-| Modifica testo esistente | E | ✅ |
-| Inserisci immagine | I | ✅ |
-| Rettangolo | R | ✅ |
-| Evidenziatore | H | ✅ |
-| Penna libera | D | ✅ |
-| **Redazione sicura** | **X** | ✅ |
-| Salva / applica modifiche | Ctrl+S | ✅ |
-| Undo | Ctrl+Z | ✅ |
-| Zoom in/out | + / - | ✅ |
-| Sidebar miniature + drag & drop | — | ✅ |
-| Tema dark / light | — | ✅ |
-| Conversione PNG/JPG/DOCX/ODT | — | ✅ |
-| Export ZIP multi-pagina | — | 🔜 |
-| Merge PDF | — | 🔜 |
-
-### Redazione sicura
-
-Il tool **Redazione** (tasto `X`) oscura permanentemente il contenuto selezionato.
-Quando salvi con "Applica e aggiorna", ogni pagina viene rasterizzata e il testo
-sottostante ai blocchi neri è **irrecuperabile**: il PDF in output è image-based,
-senza testo estraibile.
+| Cursore | `V` | Seleziona e sposta le annotazioni |
+| Macchina da scrivere | `T` | Aggiunge testo sovrapposto |
+| Modifica testo | `E` | Modifica blocchi di testo esistenti |
+| Immagine | `I` | Inserisce un'immagine |
+| Rettangolo | `R` | Disegna un rettangolo |
+| Evidenziatore | `H` | Evidenzia un'area |
+| Penna | `D` | Disegno a mano libera |
+| **Redazione** | **`X`** | **Oscuramento permanente** |
+| Salva | `Ctrl+S` | Applica e salva |
+| Annulla | `Ctrl+Z` | Undo ultima modifica |
+| Apri file | `Ctrl+O` | Apre un PDF |
+| Zoom + / - | `+` / `-` | Ingrandisce / rimpicciolisce |
 
 ---
 
-## Stack
+## Piattaforme
 
-| Libreria | Versione | Scopo |
-|---|---|---|
-| `pdfrx` | ^1.0.70 | Rendering PDF (PDFium/MuPDF nativo) |
-| `pdf` | ^3.11.0 | Generazione PDF con annotazioni baked |
-| `provider` | ^6.1.2 | State management |
-| `file_picker` | ^8.0.3 | Apertura file PDF |
-| `image_picker` | ^1.1.2 | Inserimento immagini |
-| `share_plus` | ^10.0.0 | Export / condivisione |
-| `flutter_colorpicker` | ^1.1.0 | Selezione colori |
-| `archive` | ^3.6.1 | Export ZIP multi-pagina (in sviluppo) |
-| `docx_template` | ^0.4.0 | Export DOCX/ODT |
-
----
-
-## Struttura progetto
-
-```
-lib/
-├── main.dart                  # Entry point + Provider setup
-├── models/
-│   └── pdf_annotation.dart    # PdfAnnotation, TextBlockEdit, ImageBlockEdit
-├── services/
-│   ├── editor_state.dart      # ChangeNotifier — stato globale editor
-│   └── pdf_service.dart       # Rasterizzazione, bake annotazioni, export PDF
-├── screens/
-│   └── editor_screen.dart     # Schermata principale + shortcut tastiera
-├── widgets/
-│   ├── editor_toolbar.dart    # Toolbar con palette tool e controlli
-│   ├── page_sidebar.dart      # Miniature pagine con drag & drop
-│   └── annotation_canvas.dart # Canvas disegno annotazioni sopra il PDF
-└── utils/
-    └── app_theme.dart         # Tema dark/light
-```
-
----
-
-## Setup locale
-
-```bash
-# Requisiti: Flutter >= 3.10
-flutter --version
-
-git clone https://github.com/mccoy88f/AIdeas-PDF.git
-cd AIdeas-PDF
-
-# Prima volta: aggiunge il supporto per la piattaforma target
-flutter create --platforms=windows .   # oppure web, linux, macos, android, ios
-
-flutter pub get
-flutter run -d windows    # o chrome, linux, macos, android, ios
-```
-
-## Build release
-
-```bash
-# Windows
-flutter create --platforms=windows .
-flutter build windows --release
-# Output: build/windows/x64/runner/Release/
-
-# Web
-flutter create --platforms=web .
-flutter build web --release --base-href "/AIdeas-PDF/"
-# Output: build/web/
-
-# Android APK
-flutter build apk --release
-
-# macOS
-flutter build macos --release
-```
-
----
-
-## CI / CD
-
-| Workflow | Trigger | Output |
-|---|---|---|
-| **Build Windows** | Push su qualsiasi branch + manuale | ZIP scaricabile dagli Artifacts (30 gg) |
-| **Deploy Web** | Push su `main` + manuale | Deploy su GitHub Pages |
-
-Per abilitare GitHub Pages: **Settings → Pages → Source → GitHub Actions**
+| Piattaforma | Stato |
+|---|---|
+| Web (browser) | ✅ |
+| Windows | ✅ |
+| macOS | ✅ |
+| Linux | ✅ |
+| Android | ✅ |
+| iOS | ✅ |
