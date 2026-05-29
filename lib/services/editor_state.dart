@@ -187,7 +187,8 @@ class EditorState extends ChangeNotifier {
     for (final e in textEdits.entries) {
       if (e.value.page == deletedPage) continue;
       final newPage = e.value.page > deletedPage ? e.value.page - 1 : e.value.page;
-      newTextEdits[e.key] = e.value..page == newPage;
+      e.value.page = newPage;
+      newTextEdits[e.key] = e.value;
     }
     textEdits
       ..clear()

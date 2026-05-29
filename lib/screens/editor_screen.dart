@@ -36,7 +36,6 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void dispose() {
     _document?.dispose();
-    _pdfCtrl?.dispose();
     super.dispose();
   }
 
@@ -321,7 +320,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     child: _document == null
                       ? _DropZone(onOpenFile: _openFile)
                       : _PdfCanvas(
-                          document: _document!,
+                          filePath: state.pdfFile!.path,
                           state: state,
                           controller: _pdfCtrl!,
                         ),
@@ -428,25 +427,24 @@ class _DropZone extends StatelessWidget {
 
 // ── PDF canvas con annotazioni ─────────────
 class _PdfCanvas extends StatelessWidget {
-  final PdfDocument document;
+  final String filePath;
   final EditorState state;
   final PdfViewerController controller;
 
   const _PdfCanvas({
-    required this.document,
+    required this.filePath,
     required this.state,
     required this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
-    return PdfViewer.document(
-      document,
+    return PdfViewer.file(
+      filePath,
       controller: controller,
       params: PdfViewerParams(
         margin: 24,
         backgroundColor: Colors.transparent,
-        // Overlay annotazioni sopra ogni pagina
         pageOverlaysBuilder: (context, pageRect, page) {
           final pageSize = Size(page.width, page.height);
           return [

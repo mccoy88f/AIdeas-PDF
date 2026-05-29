@@ -33,7 +33,7 @@ class PdfAnnotation {
 }
 
 class TextBlockEdit {
-  final int page;
+  int page;
   final int itemIndex;
   String? newText;
   bool deleted;
