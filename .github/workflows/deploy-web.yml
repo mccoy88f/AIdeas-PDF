@@ -39,7 +39,8 @@ jobs:
         run: |
           npm install mupdf
           cp node_modules/mupdf/dist/mupdf.js web/mupdf.js
-          cp node_modules/mupdf/dist/mupdf.wasm web/mupdf.wasm
+          cp node_modules/mupdf/dist/mupdf-wasm.js web/mupdf-wasm.js
+          cp node_modules/mupdf/dist/mupdf-wasm.wasm web/mupdf-wasm.wasm
 
       - name: Build Web
         run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
