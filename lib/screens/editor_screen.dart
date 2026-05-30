@@ -477,6 +477,7 @@ class _PdfCanvas extends StatelessWidget {
   final PdfViewerController controller;
 
   const _PdfCanvas({
+    super.key,
     this.filePath,
     this.pdfBytes,
     required this.state,
@@ -501,7 +502,12 @@ class _PdfCanvas extends StatelessWidget {
       },
     );
     if (pdfBytes != null) {
-      return PdfViewer.data(pdfBytes!, controller: controller, params: params);
+      return PdfViewer.data(
+        pdfBytes!,
+        sourceName: state.fileName,
+        controller: controller,
+        params: params,
+      );
     }
     return PdfViewer.file(filePath!, controller: controller, params: params);
   }
